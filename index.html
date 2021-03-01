@@ -10,6 +10,16 @@
       margin: 0;
     }
 
+    #info-bar {
+      width: 600px;
+      margin: 10px auto 5px;
+    }
+
+    #info-bar > .info-item {
+      display: inline-block;
+      min-width: 200px;
+    }
+
     #game {
       display: block;
       margin: 0 auto;
@@ -35,6 +45,10 @@
   </style>
 </head>
 <body>
+  <div id="info-bar">
+    <div class="score-info info-item">Score: <span class="score-value">0</span></div>
+    <div class="speed-info info-item">Speed: <span class="speed-value">1</span></div>
+  </div>
   <canvas id="game" width="600" height="400"></canvas>
   <div id="ui">
     <h1 id="ui-title">贪吃蛇</h1>

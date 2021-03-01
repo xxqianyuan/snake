@@ -92,6 +92,8 @@ class Snake {
     this.waitTime = 300
     this.speed = 1
     this.score = 0
+    this.updateScore()
+    this.updateSpeed()
     this.makeFood()
   }
 
@@ -229,6 +231,15 @@ class Snake {
   }
 
   /**
+   * 更新速度显示值
+   * @param {number} value - 速度值
+   */
+  updateSpeed (value) {
+    const speedInfo = document.querySelector('#info-bar > .speed-info > .speed-value')
+    speedInfo.textContent = value || this.speed
+  }
+
+  /**
    * 加速
    */
   speedUp () {
@@ -236,6 +247,17 @@ class Snake {
     this.waitTime = Math.max(this.waitTime - 10, 20)
     // 最低为1，最高为10
     this.speed = Math.floor((300 - this.waitTime) / 280 * 9 + 1)
+
+    this.updateSpeed()
+  }
+
+  /**
+   * 更新显示分数
+   * @param {number} score - 指定显示分数
+   */
+  updateScore (score) {
+    const scoreInfo = document.querySelector('#info-bar > .score-info > .score-value')
+    scoreInfo.textContent = score || this.score
   }
 
   /**
@@ -250,6 +272,8 @@ class Snake {
     if (head.x === x && head.y === y) {
       // 计分
       this.score += 1
+      // 更新分数显示
+      this.updateScore()
       // 在画布上“删除”当前食物
       this.food.x = -1000
       // 加快移动速度

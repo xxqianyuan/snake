@@ -18,7 +18,9 @@ class Snake {
   // 上次移动时间
   lastMoveTime = 0
   // 自动移动等待时间
-  waitTime = 100
+  waitTime = 300
+  // 速度，根据waitTime计算
+  speed = 1
   // 所有格子位置
   allPos = Array(60 * 40).fill(0).map((_, i) => i)
   // 向前移动之前蛇尾的坐标
@@ -37,21 +39,25 @@ class Snake {
     if (left.includes(e.code) && this.direction.x !== 1) {
       this.direction.x = -1
       this.direction.y = 0
+      this.goAhead()
     }
     // 向右
     else if (right.includes(e.code) && this.direction.x !== -1) {
       this.direction.x = 1
       this.direction.y = 0
+      this.goAhead()
     }
     // 向上
     else if (up.includes(e.code) && this.direction.y !== 1) {
       this.direction.x = 0
       this.direction.y = -1
+      this.goAhead()
     }
     // 向下
     else if (down.includes(e.code) && this.direction.y !== -1) {
       this.direction.x = 0
       this.direction.y = 1
+      this.goAhead()
     }
   }
 
@@ -83,6 +89,8 @@ class Snake {
     this.body = [{ x: 30, y: 20 }, { x: 29, y: 20 }, { x: 28, y: 20}]
     this.tailIndex = this.body.length - 1
     this.direction = { x: 1, y: 0 }
+    this.waitTime = 300
+    this.speed = 1
     this.score = 0
     this.makeFood()
   }
@@ -217,7 +225,17 @@ class Snake {
     }
 
     // 记录移动时间
-    this.lastMoveTime = t
+    this.lastMoveTime = t || performance.now()
+  }
+
+  /**
+   * 加速
+   */
+  speedUp () {
+    // 最少为10毫秒，初始值是300毫秒
+    this.waitTime = Math.max(this.waitTime - 10, 20)
+    // 最低为1，最高为10
+    this.speed = Math.floor((300 - this.waitTime) / 280 * 9 + 1)
   }
 
   /**
@@ -234,6 +252,8 @@ class Snake {
       this.score += 1
       // 在画布上“删除”当前食物
       this.food.x = -1000
+      // 加快移动速度
+      this.speedUp()
       // 1秒后重新“创建”食物
       setTimeout(() => this.makeFood(), 1000)
       // 身体生长

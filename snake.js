@@ -83,6 +83,7 @@ class Snake {
     this.body = [{ x: 30, y: 20 }, { x: 29, y: 20 }, { x: 28, y: 20}]
     this.tailIndex = this.body.length - 1
     this.direction = { x: 1, y: 0 }
+    this.score = 0
     this.makeFood()
   }
 
@@ -103,6 +104,11 @@ class Snake {
     console.log('game over')
     cancelAnimationFrame(this.rafId)
     window.removeEventListener('keydown', this.onKeyDown)
+
+    const maxScore = localStorage.getItem('maxScore')
+    if (!maxScore || this.score > +maxScore) {
+      localStorage.setItem('maxScore', this.score)
+    }
 
     this.showGameOverUI()
   }
@@ -224,6 +230,8 @@ class Snake {
 
     // 如果吃到了食物
     if (head.x === x && head.y === y) {
+      // 计分
+      this.score += 1
       // 在画布上“删除”当前食物
       this.food.x = -1000
       // 1秒后重新“创建”食物
@@ -294,6 +302,16 @@ class Snake {
 
     const startBtn = document.getElementById('start')
     startBtn.textContent = 'Try Again'
+
+    const overInfo = document.getElementById('gameover-info')
+    overInfo.style.display = 'block'
+
+    const score = document.getElementById('score')
+    score.textContent = this.score
+
+    const maxScore = localStorage.getItem('maxScore') || this.score
+    const max = document.getElementById('max')
+    max.textContent = maxScore
 
     const ui = document.getElementById('ui')
     ui.style.display = 'flex'

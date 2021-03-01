@@ -27,12 +27,21 @@
       align-items: center;
       color: white;
     }
+
+    #gameover-info {
+      display: none;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <canvas id="game" width="600" height="400"></canvas>
   <div id="ui">
     <h1 id="ui-title">贪吃蛇</h1>
+    <div id="gameover-info">
+      <h2 id="score-info">Score: <span id="score">0</span></h2>
+      <h4 id="max-info">Max: <span id="max">0</span></h4>
+    </div>
     <button id="start" onclick="game.start()">开始</button>
   </div>
   <script src="snake.js"></script>

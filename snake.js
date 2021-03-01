@@ -322,7 +322,7 @@ class Snake {
   isGameOver () {
     const { x: hx, y: hy } = this.getHead()
     // 超出边界则结束
-    if (hx >= 60 || hx < 0 || hy >= 40 || hy < -1) {
+    if (hx >= 60 || hx < 0 || hy >= 40 || hy < 0) {
       return true
     }
     // 计算头部位置值

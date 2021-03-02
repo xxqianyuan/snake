@@ -415,15 +415,21 @@ class Snake {
 
 
 // ~~~~~~~~~
-
+// 创建游戏实例
 const game = new Snake()
+// 获取canvas元素
 const canvas = document.getElementById('game')
+// 游戏所需画布的宽高
 const width = game.getWidth()
 const height = game.getHeight()
+// 利用样式设置最终显示宽高
 canvas.style.width = `${width}px`
 canvas.style.height = `${height}px`
+// canvas真实宽高则与屏幕像素分辨率保持一致
 canvas.height = height * window.devicePixelRatio
 canvas.width = width * window.devicePixelRatio
+// 由于canvas的真实宽高范围大于显示尺寸，所以把整体坐标做相应放大
 game.canvasCtx.scale(window.devicePixelRatio, window.devicePixelRatio)
+// 在游戏开始前先绘制背景
 game.drawBg()
 // game.start()

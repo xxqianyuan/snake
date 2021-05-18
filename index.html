@@ -2,25 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>贪吃蛇</title>
   <style>
     body {
       padding: 0;
       margin: 0;
       background-color: #111827;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 600px;
+      margin: 0 auto;;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: 100%;
+      }
     }
 
     #info-bar {
-      width: 600px;
       margin: 10px auto 5px;
       color: white;
-      text-align: center;
+      display: flex;
+      justify-content: space-evenly;
     }
 
     #info-bar > .info-item {
       display: inline-block;
       min-width: 200px;
+      text-align: center;
     }
 
     #game {
@@ -29,11 +42,21 @@
       background-color: #111827;
     }
 
-    #ui {
+    #mask {
       position: fixed;
       top: 0;
+      left: 0;
       width: 100%;
-      height: 400px;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      display: none;
+    }
+
+    #ui {
+      position: absolute;
+      top: 25px;
+      width: 100%;
+      min-height: 300px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -41,25 +64,110 @@
       color: white;
     }
 
+    #ui button {
+      padding: 0.5em 1em;
+      min-width: 80px;
+      border-radius: 4px;
+      border-color: darkkhaki;
+    }
+
     #gameover-info {
       display: none;
       text-align: center;
     }
+
+    .score-value,
+    .speed-value {
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    #control {
+      color: white;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #control > .row {
+      margin: 20px;
+    }
+
+    #control .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #control .arrow > .vbtns {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      width: 60px;
+      height: 80px;
+    }
+
+    #control .arrow button {
+      width: 40px;
+      height: 30px;
+      border-radius: 8px;
+      border-width: 0;
+      padding: 0;
+    }
+
+    #control .desc > ul {
+      padding-left: 2rem;
+      list-style: none;
+      color: lightgray;
+    }
   </style>
 </head>
 <body>
-  <div id="info-bar">
-    <div class="score-info info-item">Score: <span class="score-value">0</span></div>
-    <div class="speed-info info-item">Speed: <span class="speed-value">1</span></div>
+  <div id="assets" style="display: none;">
+    <audio src="assets/move.wav" id="sound-move" preload="auto"></audio>
+  </div>
+  <div id="info-bar" class="container">
+    <div class="score-info info-item">SCORE: <span class="score-value">0</span></div>
+    <div class="speed-info info-item">LEVEL: <span class="speed-value">1</span></div>
   </div>
   <canvas id="game" width="600" height="400"></canvas>
+  <div id="control" class="container">
+    <div class="arrow row">
+      <button id="arrow-left" onclick="game.moveLeft()">
+        <img src="assets/arrow-left.svg" width="30px" />
+      </button>
+      <div class="vbtns">
+        <button id="arrow-up" onclick="game.moveUp()">
+          <img src="assets/arrow-up.svg" width="30px" />
+        </button>
+        <button id="arrow-down" onclick="game.moveDown()">
+          <img src="assets/arrow-down.svg" width="30px" />
+        </button>
+      </div>
+      <button id="arrow-right" onclick="game.moveRight()">
+        <img src="assets/arrow-right.svg" width="30px" />
+      </button>
+    </div>
+    <div class="sound row">
+      <input type="checkbox" id="sound" checked onchange="game.noisy = this.checked">
+      <label for="sound">Sound</label>
+    </div>
+    <div class="row desc">
+      <ul>
+        <li>Enter Key: Start game</li>
+        <li>Arrow Keys: Control diretcion</li>
+      </ul>
+      <a href="https://github.com/xxqianyuan/snake" target="_blank" style="font-size: 1.5em; color: inherit;"><span role="img" aria-label="github" class="anticon anticon-github"><svg viewBox="64 64 896 896" focusable="false" class="" data-icon="github" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M511.6 76.3C264.3 76.2 64 276.4 64 523.5 64 718.9 189.3 885 363.8 946c23.5 5.9 19.9-10.8 19.9-22.2v-77.5c-135.7 15.9-141.2-73.9-150.3-88.9C215 726 171.5 718 184.5 703c30.9-15.9 62.4 4 98.9 57.9 26.4 39.1 77.9 32.5 104 26 5.7-23.5 17.9-44.5 34.7-60.8-140.6-25.2-199.2-111-199.2-213 0-49.5 16.3-95 48.3-131.7-20.4-60.5 1.9-112.3 4.9-120 58.1-5.2 118.5 41.6 123.2 45.3 33-8.9 70.7-13.6 112.9-13.6 42.4 0 80.2 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.3-43.9 2.9 7.7 24.7 58.3 5.5 118 32.4 36.8 48.9 82.7 48.9 132.3 0 102.2-59 188.1-200 212.9a127.5 127.5 0 0138.1 91v112.5c.8 9 0 17.9 15 17.9 177.1-59.7 304.6-227 304.6-424.1 0-247.2-200.4-447.3-447.5-447.3z"></path></svg></span></a>
+    </div>
+  </div>
+  <div id="mask"></div>
   <div id="ui">
-    <h1 id="ui-title">贪吃蛇</h1>
+    <h1 id="ui-title">SNAKE</h1>
     <div id="gameover-info">
       <h2 id="score-info">Score: <span id="score">0</span></h2>
       <h4 id="max-info">Max: <span id="max">0</span></h4>
     </div>
-    <button id="start" onclick="game.start()">开始</button>
+    <button id="start" onclick="game.start()">Start</button>
   </div>
   <script src="snake.js"></script>
 </body>

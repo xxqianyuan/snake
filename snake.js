@@ -1,4 +1,11 @@
+const GAMESTATE = {
+  ready: 0,
+  playing: 1,
+  gameover: 2,
+}
+
 class Snake {
+  status = GAMESTATE.ready
   // 分数
   score = 0
   // 蛇身体，头至尾的坐标
@@ -15,6 +22,8 @@ class Snake {
   bRows = 20
   // 画布context
   canvasCtx = document.getElementById('game').getContext('2d')
+  // 移动的声音
+  moveSounder = document.getElementById('sound-move')
   // 移动方向
   direction = { x: 1, y: 0 }
   // 蛇尾索引
@@ -36,32 +45,103 @@ class Snake {
     up: ['ArrowUp', 'KeyW'],
     down: ['ArrowDown', 'KeyS'],
   }
-  // 监听键盘事件
-  onKeyDown = (e) => {
-    const { left, right, up, down } = this.arrowCodes
-    // 向左
-    if (left.includes(e.code) && this.direction.x !== 1) {
+  // 播放声音
+  noisy = true
+
+  constructor() {
+    window.addEventListener('keydown', this.onEnterDown, true)
+    window.addEventListener('keydown', this.onArrowDown, true)
+
+    const vw = window.innerWidth
+    if (vw < 540) {
+      // this.bCols * (this.bSpace + this.bSize) + this.bSpace
+      this.bSize = Math.floor((vw - this.bSpace) / this.bCols - this.bSpace)
+    }
+
+    // 获取canvas元素
+    const canvas = document.getElementById('game')
+    // 游戏所需画布的宽高
+    const width = this.getWidth()
+    const height = this.getHeight()
+
+    const ui = document.getElementById('ui')
+    ui.style.minHeight = `${height}px`
+    // 利用样式设置最终显示宽高
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${height}px`
+    // canvas真实宽高则与屏幕像素分辨率保持一致
+    canvas.height = height * window.devicePixelRatio
+    canvas.width = width * window.devicePixelRatio
+    // 由于canvas的真实宽高范围大于显示尺寸，所以把整体坐标做相应放大
+    this.canvasCtx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    // 在游戏开始前先绘制背景
+    this.drawBg()
+  }
+
+  moveLeft() {
+    if (this.status === GAMESTATE.playing && this.direction.x !== 1) {
       this.direction.x = -1
       this.direction.y = 0
       this.goAhead()
     }
-    // 向右
-    else if (right.includes(e.code) && this.direction.x !== -1) {
+  }
+
+  moveRight() {
+    if (this.status === GAMESTATE.playing && this.direction.x !== -1) {
       this.direction.x = 1
       this.direction.y = 0
       this.goAhead()
     }
-    // 向上
-    else if (up.includes(e.code) && this.direction.y !== 1) {
+  }
+
+  moveUp() {
+    if (this.status === GAMESTATE.playing && this.direction.y !== 1) {
       this.direction.x = 0
       this.direction.y = -1
       this.goAhead()
     }
-    // 向下
-    else if (down.includes(e.code) && this.direction.y !== -1) {
+  }
+
+  moveDown() {
+    if (this.status === GAMESTATE.playing && this.direction.y !== -1) {
       this.direction.x = 0
       this.direction.y = 1
       this.goAhead()
+    }
+  }
+
+  // 监听键盘事件
+  onArrowDown = (e) => {
+    if (this.status !== GAMESTATE.playing) { return }
+    const { left, right, up, down } = this.arrowCodes
+    // 向左
+    if (left.includes(e.code)) {
+      e.preventDefault()
+      this.moveLeft()
+    }
+    // 向右
+    else if (right.includes(e.code)) {
+      e.preventDefault()
+      this.moveRight()
+    }
+    // 向上
+    else if (up.includes(e.code)) {
+      e.preventDefault()
+      this.moveUp()
+    }
+    // 向下
+    else if (down.includes(e.code)) {
+      e.preventDefault()
+      this.moveDown()
+    }
+  }
+
+  // 回车键开始游戏
+  onEnterDown = (e) => {
+    if (this.status === GAMESTATE.playing) { return }
+    if (e.code === 'Enter') {
+      e.preventDefault()
+      game.start()
     }
   }
 
@@ -145,8 +225,10 @@ class Snake {
    * 开始游戏
    */
   start () {
+    if (this.status === GAMESTATE.playing) { return }
+    this.status = GAMESTATE.playing
     this.initData()
-    window.addEventListener('keydown', this.onKeyDown)
+    // window.addEventListener('keydown', this.onArrowDown)
     this.hideUI()
     this.step()
   }
@@ -156,8 +238,10 @@ class Snake {
    */
   gameOver () {
     console.log('game over')
+    this.status = GAMESTATE.gameover
     cancelAnimationFrame(this.rafId)
-    window.removeEventListener('keydown', this.onKeyDown)
+    // window.removeEventListener('keydown', this.onArrowDown)
+    // window.addEventListener('keydown', this.onEnterDown)
 
     const maxScore = localStorage.getItem('maxScore')
     if (!maxScore || this.score > +maxScore) {
@@ -269,6 +353,20 @@ class Snake {
 
     // 记录移动时间
     this.lastMoveTime = t || performance.now()
+
+    // 播放声音
+    this.playMoveSound()
+  }
+
+  /**
+   * 播放移动声音
+   */
+  playMoveSound() {
+    if (this.noisy) {
+      this.moveSounder.pause()
+      this.moveSounder.currentTime = 0
+      this.moveSounder.play()
+    }
   }
 
   /**
@@ -400,6 +498,9 @@ class Snake {
 
     const ui = document.getElementById('ui')
     ui.style.display = 'flex'
+
+    const mask = document.getElementById('mask')
+    mask.style.display = 'block'
   }
 
   /**
@@ -408,6 +509,9 @@ class Snake {
   hideUI () {
     const ui = document.getElementById('ui')
     ui.style.display = 'none'
+
+    const mask = document.getElementById('mask')
+    mask.style.display = 'none'
   }
 
   // ...
@@ -417,19 +521,19 @@ class Snake {
 // ~~~~~~~~~
 // 创建游戏实例
 const game = new Snake()
-// 获取canvas元素
-const canvas = document.getElementById('game')
-// 游戏所需画布的宽高
-const width = game.getWidth()
-const height = game.getHeight()
-// 利用样式设置最终显示宽高
-canvas.style.width = `${width}px`
-canvas.style.height = `${height}px`
-// canvas真实宽高则与屏幕像素分辨率保持一致
-canvas.height = height * window.devicePixelRatio
-canvas.width = width * window.devicePixelRatio
-// 由于canvas的真实宽高范围大于显示尺寸，所以把整体坐标做相应放大
-game.canvasCtx.scale(window.devicePixelRatio, window.devicePixelRatio)
-// 在游戏开始前先绘制背景
-game.drawBg()
-// game.start()
+// // 获取canvas元素
+// const canvas = document.getElementById('game')
+// // 游戏所需画布的宽高
+// const width = game.getWidth()
+// const height = game.getHeight()
+// // 利用样式设置最终显示宽高
+// canvas.style.width = `${width}px`
+// canvas.style.height = `${height}px`
+// // canvas真实宽高则与屏幕像素分辨率保持一致
+// canvas.height = height * window.devicePixelRatio
+// canvas.width = width * window.devicePixelRatio
+// // 由于canvas的真实宽高范围大于显示尺寸，所以把整体坐标做相应放大
+// game.canvasCtx.scale(window.devicePixelRatio, window.devicePixelRatio)
+// // 在游戏开始前先绘制背景
+// game.drawBg()
+// // game.start()

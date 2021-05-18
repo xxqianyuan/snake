@@ -6,4 +6,11 @@
 运行
 ---
 
-在项目根目录启动一个http服务，或者在vscode中使用“Live Server”插件启动服务，然后访问首页即可
+> ```bash
+> yarn start
+> ```
+
+界面
+---
+
+![ready](imgs/ready.png)

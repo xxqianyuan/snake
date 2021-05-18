@@ -520,7 +520,7 @@ class Snake {
 
 // ~~~~~~~~~
 // 创建游戏实例
-const game = new Snake()
+window.game = new Snake()
 // // 获取canvas元素
 // const canvas = document.getElementById('game')
 // // 游戏所需画布的宽高

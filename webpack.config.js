@@ -3,6 +3,16 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
+const gtag = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-D9J2ZVJPLB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-D9J2ZVJPLB');
+</script>
+`
+
 module.exports = {
   entry: './snake.js',
   mode: 'development',
@@ -27,7 +37,9 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
+      title: 'Snake',
       template: './index.html',
+      gtag: process.env.NODE_ENV === 'production' ? gtag : ''
     }),
     new CopyWebpackPlugin({
       patterns: [
